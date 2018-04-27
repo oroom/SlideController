@@ -21,7 +21,7 @@ class TitleSlidableController<T, N>: TitleScrollable where T: ViewSlidable, T: U
 
     private var isOffsetChangeAllowed = true
     private var scrollDirection: SlideDirection
-    private var selectedIndex = 0
+    private var selectedIndex = -1
     
     private lazy var didCompleteSelectItemAction: () -> Void = { [weak self] in
         guard let strongSelf = self else { return }
@@ -57,6 +57,7 @@ class TitleSlidableController<T, N>: TitleScrollable where T: ViewSlidable, T: U
         if pagesCount > 0 {
             append(pagesCount: pagesCount)
         }
+        select(index: 0)
     }
     
     var didSelectItemAction: ((Int, (() -> Void)?) -> Void)?
