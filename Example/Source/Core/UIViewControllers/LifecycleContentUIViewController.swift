@@ -8,7 +8,7 @@
 
 import UIKit
 
-class LifecycleContentUIViewController<T>: UIViewController where T: ViewAccessible & StatusBarAccessible & ViewLifeCycleDependable {
+class LifecycleContentUIViewController<T>: UIViewController where T: ViewAccessible & StatusBarAccessible & ViewLifeCycleDependable & TitleDesignable {
     var controller: T? {
         didSet {
             guard let controller = controller else {
@@ -16,6 +16,7 @@ class LifecycleContentUIViewController<T>: UIViewController where T: ViewAccessi
             }
             //Bad design, but this is just a demo :)
             view = controller.view
+            title = controller.title
             automaticallyAdjustsScrollViewInsets = false
         }
     }
@@ -34,4 +35,3 @@ class LifecycleContentUIViewController<T>: UIViewController where T: ViewAccessi
         return controller?.statusBarStyle ?? .default
     }
 }
-

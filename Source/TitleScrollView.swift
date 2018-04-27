@@ -80,12 +80,15 @@ open class TitleScrollView<T>: UIScrollView, ViewSlidable, TitleConfigurable whe
     open func removeViewAtIndex(index: Int) { }
     
     ///Simple hack to be notified when layout completed
-    open var firstLayoutAction: (() -> ())?
+    open var firstLayoutAction: (() -> Void)?
     
     ///Notifies on each size or content size update
-    open var changeLayoutAction: (() -> ())?
+    open var changeLayoutAction: (() -> Void)?
     
     // MARK: - TitleConfigurableImplementation
+    
+    
+    /// Alignment of title view. Supports `.top`, `.bottom`, `.left`, `.right`. The default value of `alignment` is `.top`.
     public var alignment = TitleViewAlignment.top {
         didSet {
             if alignment != oldValue {
@@ -94,6 +97,7 @@ open class TitleScrollView<T>: UIScrollView, ViewSlidable, TitleConfigurable whe
         }
     }
     
+    /// The size of `TitleScrollView`. For `.horizontal` slide direction of `SlideController` the `titleSize` corresponds to `height`. For `.vertical` slide direction of `SlideController` the `titleSize` corresponds to `width`.  The default value of `titleSize` is `84`.
     open var titleSize: CGFloat = 84 {
         didSet {
             if titleSize != oldValue {
@@ -114,6 +118,7 @@ open class TitleScrollView<T>: UIScrollView, ViewSlidable, TitleConfigurable whe
     
     weak public var titleViewConfigurationDelegate: TitleViewConfigurationDelegate?
     
+    /// Array of title items that displayed in `TitleScrollView`.
     open var items: [TitleItem] {
         return [TitleItem]()
     }

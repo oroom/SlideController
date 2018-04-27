@@ -8,10 +8,14 @@
 
 import UIKit
 
-class RootUINavigationController : UINavigationController {
+class RootUINavigationController: UINavigationController {
+    
     init() {
         super.init(nibName: nil, bundle: nil)
-        navigationBar.isHidden = true
+        navigationBar.barTintColor = .purple
+        navigationBar.setBackgroundImage(UIImage(), for: .default)
+        navigationBar.shadowImage = UIImage()
+        navigationBar.isTranslucent = false
     }
     
     required init?(coder aDecoder: NSCoder) {

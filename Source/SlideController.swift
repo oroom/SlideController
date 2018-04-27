@@ -103,7 +103,14 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
     private var lastContentOffset: CGFloat = 0
     private var didFinishForceSlide: (() -> Void)?
     private var didFinishSlideAction: (() -> Void)?
-    private var isForcedToSlide = false
+    private var isForcedToSlide = false {
+        didSet {
+            guard oldValue != isForcedToSlide else {
+                return
+            }
+            contentSlidableController.slideContentView.isScrollEnabled = !isForcedToSlide
+        }
+    }
     private var isOnScreen = false
     
     /// Default delay for sending end animation selector scrollViewEndAnimating(_ scrollView: UIScrollView)
@@ -114,24 +121,25 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
     /// Used for setting title item selection.
     private var scrollInProgress = false {
         didSet {
-            if oldValue != scrollInProgress {
-                /// Disable selection and scrolling of title view
-                titleSlidableController.isSelectionAllowed = !scrollInProgress
-                titleSlidableController.titleView.isScrollEnabled = !scrollInProgress
-                /// Once scrolling is started to show title that out of the screen
-                if scrollInProgress && !isForcedToSlide {
-                    titleSlidableController.jump(index: currentIndex, animated: false)
-                }
+            guard oldValue != scrollInProgress else {
+                return
+            }
+            /// Disable selection and scrolling of title view
+            titleSlidableController.isSelectionAllowed = !scrollInProgress
+            titleSlidableController.titleView.isScrollEnabled = !scrollInProgress
+            /// Once scrolling is started to show title that out of the screen
+            if scrollInProgress && !isForcedToSlide {
+                titleSlidableController.jump(index: currentIndex, animated: false)
             }
         }
     }
     
-    ///Returns title view instanse of specified type
+    /// Returns `titleView` instanсe of specified type.
     public var titleView: T {
         return titleSlidableController.titleView
     }
     
-    ///Returns model for access to current LifeCycle object
+    /// Returns `LifeCycleObject` for currently displayed page.
     public var currentModel: SlideLifeCycleObjectProvidable? {
         if content.indices.contains(currentIndex) {
             return content[currentIndex]
@@ -139,10 +147,10 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
         return nil
     }
     
-    ///Array of specified models
+    /// Returns array of `LifeCycleObject` that corresponds to `SlideController`'s content.
     public private(set) var content = [SlideLifeCycleObjectProvidable]()
     
-    ///Allows views unloading
+    /// When set to `true` unloads content when it is out of screen bounds. The default value is `true`.
     public var isContentUnloadingEnabled = true {
         didSet {
             guard oldValue != isContentUnloadingEnabled else {
@@ -164,13 +172,13 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
         }
     }
     
-    ///Enables infinite circular scrolling
-    public var isCircular: Bool {
+    /// When set to `true` scrolling in the direction of last item will result jumping to the first item.  Makes scrolling infinite. The default value is `false`.
+    public var isCarousel: Bool {
         get {
-            return contentSlidableController.isCircular
+            return contentSlidableController.isCarousel
         }
         set {
-            contentSlidableController.isCircular = newValue
+            contentSlidableController.isCarousel = newValue
         }
     }
     
@@ -210,7 +218,16 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
         strongSelf.didFinishForceSlide = completion
     }
 
-    public init(pagesContent: [SlideLifeCycleObjectProvidable], startPageIndex: Int = 0, slideDirection: SlideDirection) {
+    
+    /// Default initializer `SlideController`
+    ///
+    /// - Parameters:
+    ///   - pagesContent: initial content of controller, can be empty.
+    ///   - startPageIndex: page index that should be displayed initially.
+    ///   - slideDirection: slide direction. `.horizontal` or `.vertical`
+    public init(pagesContent: [SlideLifeCycleObjectProvidable],
+                startPageIndex: Int = 0,
+                slideDirection: SlideDirection) {
         super.init()
         content = pagesContent
         self.slideDirection = slideDirection
@@ -228,7 +245,8 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
         contentSlidableController.slideContentView.changeLayoutAction = changeContentLayoutAction
     }
     
-    var isScrollEnabled: Bool = true {
+    /// If the value of this property is `true`, content scrolling is enabled, and if it is `false`, content scrolling is disabled. The default is `true`.
+    public var isScrollEnabled: Bool = true {
         didSet {
             contentSlidableController.slideContentView.isScrollEnabled = isScrollEnabled
         }
@@ -236,6 +254,7 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
 
     // MARK: - ControllerSlidableImplementation
     
+    /// Appends pages array of `SlideLifeCycleObjectProvidable` to the end of sliding content.
     public func append(object objects: [SlideLifeCycleObjectProvidable]) {
         guard objects.count > 0 else {
             return
@@ -270,6 +289,7 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
         }
     }
 
+    /// Inserts `SlideLifeCycleObjectProvidable` page object at `index` in sliding content.
     public func insert(object: SlideLifeCycleObjectProvidable, index: Int) {
         guard index < content.count else {
             return
@@ -290,7 +310,6 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
                 shift(pageIndex: newCurrentIndex, animated: false)
             }
             currentIndex = newCurrentIndex
-            isForcedToSlide = false
             contentSlidableController.slideContentView.delegate = self
             // Load view if it's around current
             if currentIndex - index <= 1 || !isContentUnloadingEnabled {
@@ -309,6 +328,7 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
         }
     }
     
+    /// Removes a page at `index`.
     public func removeAtIndex(index: Int) {
         guard index < content.count else {
             return
@@ -334,7 +354,9 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
         
         if index < currentIndex {
             shift(pageIndex: currentIndex - 1, animated: false)
-            currentIndex = currentIndex - 1
+            if contentSlidableController.slideContentView.isLayouted {
+                currentIndex = currentIndex - 1
+            }
         } else if index == currentIndex {
             /// TODO: check this case
             if currentIndex < content.count {
@@ -349,8 +371,14 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
         contentSlidableController.slideContentView.delegate = self
     }
     
+    /// Slides content to page at `pageIndex` with sliding animation if `animated` is set to `true`. The default value of `animated` is `true`.
     public func shift(pageIndex: Int, animated: Bool = true, forced: Bool = false) {
         guard pageIndex != currentIndex || forced else {
+            return
+        }
+        // Do not allow multiple shift calls,
+        // the problem is described in https://stackoverflow.com/a/16898199
+        guard !isForcedToSlide || forced else {
             return
         }
         isForcedToSlide = animated
@@ -370,8 +398,13 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
         } else {
             scrollToPage(pageIndex: pageIndex, animated: animated)
         }
+        if !animated || !contentSlidableController.slideContentView.isLayouted {
+            scrollInProgress = false
+            isForcedToSlide = false
+        }
     }
     
+    /// Slides content the next page with sliding animation if `animated` is set to `true`. The default value of `animated` is `true`.
     public func showNext(animated: Bool = true) {
         var page = currentIndex + 1
         var animated = animated
@@ -395,6 +428,7 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
         shift(pageIndex: page, animated: animated)
     }
     
+    /// Lets the `SlideController` know when it is displayed on the screen. Used for correctly triggering `LifeCycle` events.
     public func viewDidAppear() {
         isOnScreen = true
         if content.indices.contains(currentIndex) {
@@ -402,6 +436,7 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
         }
     }
     
+    /// Lets the `SlideController` know when it is not displayed on the screen. Used for correctly triggering `LifeCycle` events.
     public func viewDidDisappear() {
         isOnScreen = false
         if content.indices.contains(currentIndex) {

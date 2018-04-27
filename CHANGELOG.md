@@ -1,3 +1,25 @@
+# Changelog for SlideController 1.3.2
+### Fixed
+* Do not allow multiple `shift` calls at the same time to prevent titleView freeze.
+
+# Changelog for SlideController 1.3.1
+### Example changes
+* `insertAction` now inserts a page before currently selected page for both vertical and horizontal samples.
+* `removeAction` now deletes current page for vertical sample as well as for horizontal.
+
+# Changelog for SlideController 1.3.0
+### Added
+* New example look 🎉 .
+### **Breaking Change**
+* ```isCircular``` renamed to ```isCarousel```.
+### Fixed
+* Select title item after ```insert(object: SlideLifeCycleObjectProvidable, index: Int)```
+
+# Changelog for SlideController 1.2.2
+### Fixed
+* ```isScrollEnabled``` exposed to public api as intended.
+* ```currentIndex``` calculation for not layouted views.
+
 # Changelog for SlideController 1.2.1
 ### Fixed
 * Title item selection follow up. [#35](https://github.com/touchlane/SlideController/issues/35)

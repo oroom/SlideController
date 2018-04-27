@@ -9,50 +9,55 @@
 import UIKit
 
 class RootRouter {
-    var presenter: UINavigationController?
+    private let presenter: UINavigationController
+    
+    init(presenter: UINavigationController) {
+        self.presenter = presenter
+    }
     
     func openMainScreen(animated: Bool) {
         let optionsControler = OptionsController()
         optionsControler.openHorizontalDemoAction = openHorizontalDemoAction
         optionsControler.openVerticalDemoAction = openVerticalDemoAction
-        optionsControler.openCircularDemoAction = openCircularDemoAction
+        optionsControler.openCarouselDemoAction = openCarouselDemoAction
         let vc = ContentUIViewController<OptionsController>()
         vc.controller = optionsControler
-        presenter?.setViewControllers([vc], animated: animated)
+        setupNavigationBar(presenter: presenter, controller: optionsControler)
+        presenter.setViewControllers([vc], animated: animated)
     }
     
     func showHorizontalPage(animated: Bool) {
         let actionsController = ActionsController()
-        actionsController.menuDidTapAction = menuDidTapAction
         let horizontalController = HorizontalController()
         horizontalController.optionsController = actionsController
         let vc = LifecycleContentUIViewController<HorizontalController>()
         vc.controller = horizontalController
-        presenter?.pushViewController(vc, animated: animated)
+        setupNavigationBar(presenter: presenter, controller: horizontalController)
+        presenter.pushViewController(vc, animated: animated)
     }
     
     func showVerticalPage(animated: Bool) {
         let actionsController = ActionsController()
-        actionsController.menuDidTapAction = menuDidTapAction
         let verticalController = VerticalController()
         verticalController.optionsController = actionsController
         let lifecycleController = LifecycleContentUIViewController<VerticalController>()
         lifecycleController.controller = verticalController
-        presenter?.pushViewController(lifecycleController, animated: true)
+        setupNavigationBar(presenter: presenter, controller: verticalController)
+        presenter.pushViewController(lifecycleController, animated: animated)
     }
     
-    func showCircularPage(animated: Bool) {
+    func showCarouselPage(animated: Bool) {
         let actionsController = ActionsController()
         actionsController.isShowAdvancedActions = false
-        actionsController.menuDidTapAction = menuDidTapAction
-        let circularController = CircularController()
-        circularController.optionsController = actionsController
-        let lifecycleController = LifecycleContentUIViewController<CircularController>()
-        lifecycleController.controller = circularController
-        presenter?.pushViewController(lifecycleController, animated: true)
+        let carouselController = CarouselController()
+        carouselController.optionsController = actionsController
+        let lifecycleController = LifecycleContentUIViewController<CarouselController>()
+        lifecycleController.controller = carouselController
+        setupNavigationBar(presenter: presenter, controller: carouselController)
+        presenter.pushViewController(lifecycleController, animated: animated)
     }
     
-    private lazy var openHorizontalDemoAction: (() -> ())? = { [weak self] in
+    private lazy var openHorizontalDemoAction: (() -> Void)? = { [weak self] in
         guard let strongSelf = self else { return }
         strongSelf.showHorizontalPage(animated: true)
     }
@@ -64,15 +69,23 @@ class RootRouter {
         strongSelf.showVerticalPage(animated: true)
     }
     
-    private lazy var openCircularDemoAction: (() -> Void)? = { [weak self] in
+    private lazy var openCarouselDemoAction: (() -> Void)? = { [weak self] in
         guard let strongSelf = self else {
             return
         }
-        strongSelf.showCircularPage(animated: true)
+        strongSelf.showCarouselPage(animated: true)
     }
     
-    private lazy var menuDidTapAction: (() -> ())? = { [weak self] in
-        guard let strongSelf = self else { return }
-        strongSelf.presenter?.popViewController(animated: true)
+    private func setupNavigationBar(presenter: UINavigationController, controller: TitleDesignable) {
+        let shadow = NSShadow()
+        shadow.shadowBlurRadius = 2
+        shadow.shadowOffset = CGSize(width: 0, height: 1)
+        shadow.shadowColor = UIColor(white: 0.5, alpha: 0.5)
+        
+        presenter.navigationBar.tintColor = controller.titleColor
+        presenter.navigationBar.titleTextAttributes = [
+            NSAttributedStringKey.foregroundColor: controller.titleColor,
+            NSAttributedStringKey.shadow: shadow
+        ]
     }
 }

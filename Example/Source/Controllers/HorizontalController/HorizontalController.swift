@@ -12,29 +12,45 @@ import SlideController
 class HorizontalController {
     private let internalView = HorizontalView()
     private let slideController: SlideController<HorizontalTitleScrollView, HorizontalTitleItem>!
-    
-    lazy var removeAction: (() -> Void)? = { [weak self] in
+
+    private var addedPagesCount: Int
+
+    lazy var removeCurrentPageAction: (() -> Void)? = { [weak self] in
         guard let strongSelf = self else { return }
-        strongSelf.slideController.removeAtIndex(index: 0)
-        strongSelf.updateTitles()
+        guard let currentPageIndex = strongSelf.slideController.content
+            .index(where: { strongSelf.slideController.currentModel === $0 }) else {
+            return
+        }
+        strongSelf.slideController.removeAtIndex(index: currentPageIndex)
     }
-    
+
     lazy var insertAction: (() -> Void)? = { [weak self] in
         guard let strongSelf = self else { return }
         let page = SlideLifeCycleObjectBuilder<ColorPageLifeCycleObject>(object: ColorPageLifeCycleObject())
-        let index = strongSelf.slideController.content.count == 0 ? 0 : strongSelf.slideController.content.count - 1
+        guard let index = strongSelf.slideController.content
+            .index(where: { strongSelf.slideController.currentModel === $0 }) else {
+                return
+        }
         strongSelf.slideController.insert(object: page, index: index)
-        strongSelf.updateTitles()
+        strongSelf.addedPagesCount += 1
+
+        let titleItems = strongSelf.slideController.titleView.items
+        guard titleItems.indices.contains(index) else { return }
+        titleItems[index].titleLabel.text = strongSelf.title(for: strongSelf.addedPagesCount)
     }
-    
+
     lazy var appendAction: (() -> Void)? = { [weak self] in
         guard let strongSelf = self else { return }
         let page = SlideLifeCycleObjectBuilder<ColorPageLifeCycleObject>(object: ColorPageLifeCycleObject())
         strongSelf.slideController.append(object: [page])
-        strongSelf.updateTitles()
+        strongSelf.addedPagesCount += 1
+
+        let titleItems = strongSelf.slideController.titleView.items
+        let lastItemIndex = titleItems.count - 1
+        titleItems[lastItemIndex].titleLabel.text = strongSelf.title(for: strongSelf.addedPagesCount)
     }
-    
-    private lazy var changePositionAction: ((Int) -> ())? = { [weak self] position in
+
+    private lazy var changePositionAction: ((Int) -> Void)? = { [weak self] position in
         guard let strongSelf = self else { return }
         switch position {
         case 0:
@@ -47,19 +63,7 @@ class HorizontalController {
             break
         }
     }
-    
-    private lazy var changeTitleModeAction: ((Int) -> ())? = { [weak self] mode in
-        guard let strongSelf = self else { return }
-        switch mode {
-        case 0:
-            strongSelf.slideController.titleView.titleShiftMode = .center
-        case 1:
-            strongSelf.slideController.titleView.titleShiftMode = .paged
-        default:
-            break
-        }
-    }
-    
+
     init() {
         let pagesContent = [
             SlideLifeCycleObjectBuilder<ColorPageLifeCycleObject>(object: ColorPageLifeCycleObject()),
@@ -69,28 +73,31 @@ class HorizontalController {
             pagesContent: pagesContent,
             startPageIndex: 0,
             slideDirection: SlideDirection.horizontal)
-        updateTitles()
+
+        addedPagesCount = pagesContent.count
+        for index in 0..<addedPagesCount {
+            slideController.titleView.items[index].titleLabel.text = title(for: index + 1)
+        }
+      
+        slideController.titleView.titleSize = 44
         internalView.contentView = slideController.view
     }
-    
+
     var optionsController: (ViewAccessible & ContentActionable)? {
         didSet {
             internalView.optionsView = optionsController?.view
-            optionsController?.removeDidTapAction = removeAction
+            optionsController?.removeDidTapAction = removeCurrentPageAction
             optionsController?.insertDidTapAction = insertAction
             optionsController?.appendDidTapAction = appendAction
             optionsController?.changePositionAction = changePositionAction
-            optionsController?.changeTitleModeAction = changeTitleModeAction
         }
     }
 }
 
 private typealias PrivateHorizontalController = HorizontalController
 private extension PrivateHorizontalController {
-    func updateTitles() {
-        for index in 0..<slideController.content.count {
-            slideController.titleView.items[index].titleLabel.text = "page \(index + 1)"
-        }
+    func title(for index: Int) -> String {
+       return "page \(index)"
     }
 }
 
@@ -99,7 +106,7 @@ extension ViewLifeCycleDependableImplementation: ViewLifeCycleDependable {
     func viewDidAppear() {
         slideController.viewDidAppear()
     }
-    
+
     func viewDidDisappear() {
         slideController.viewDidDisappear()
     }
@@ -116,5 +123,19 @@ private typealias StatusBarAccessibleImplementation = HorizontalController
 extension StatusBarAccessibleImplementation: StatusBarAccessible {
     var statusBarStyle: UIStatusBarStyle {
         return .lightContent
+    }
+}
+
+private typealias TitleAccessibleImplementation = HorizontalController
+extension TitleAccessibleImplementation: TitleAccessible {
+    var title: String {
+        return "Horizontal"
+    }
+}
+
+private typealias TitleColorableImplementation = HorizontalController
+extension TitleColorableImplementation: TitleColorable {
+    var titleColor: UIColor {
+        return .white
     }
 }

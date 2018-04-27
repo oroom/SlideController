@@ -11,7 +11,7 @@ import UIKit
 protocol OptionsControllerProtocol: class {
     var openHorizontalDemoAction: (() -> Void)? { get set }
     var openVerticalDemoAction: (() -> Void)? { get set }
-    var openCircularDemoAction: (() -> Void)? { get set }
+    var openCarouselDemoAction: (() -> Void)? { get set }
 }
 
 class OptionsController {
@@ -38,12 +38,12 @@ extension OptionsControllerProtocolImplementation : OptionsControllerProtocol {
         }
     }
     
-    var openCircularDemoAction: (() -> Void)? {
+    var openCarouselDemoAction: (() -> Void)? {
         get {
-            return internalView.circularDemoButton.didTouchUpInside
+            return internalView.carouselDemoButton.didTouchUpInside
         }
         set {
-            internalView.circularDemoButton.didTouchUpInside = newValue
+            internalView.carouselDemoButton.didTouchUpInside = newValue
         }
     }
 }
@@ -60,6 +60,20 @@ extension ViewAccessibleImplementation: ViewAccessible {
 private typealias StatusBarAccessibleImplementation = OptionsController
 extension StatusBarAccessibleImplementation: StatusBarAccessible {
     var statusBarStyle: UIStatusBarStyle {
-        return .default
+        return .lightContent
+    }
+}
+
+private typealias TitleAccessibleImplementation = OptionsController
+extension TitleAccessibleImplementation: TitleAccessible {
+    var title: String {
+        return "SlideController"
+    }
+}
+
+private typealias TitleColorableImplementation = OptionsController
+extension TitleColorableImplementation: TitleColorable {
+    var titleColor: UIColor {
+        return .white
     }
 }
