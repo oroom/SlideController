@@ -144,7 +144,7 @@ class TitleSlidableController<T, N>: TitleScrollable where T: ViewSlidable, T: U
     }
     
     func select(index: Int) {
-        guard controllers.indices.contains(index) else {
+        guard controllers.indices.contains(index), selectedIndex != index else {
             return
         }
         if controllers.indices.contains(selectedIndex) {
