@@ -373,7 +373,7 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
     
     /// Slides content to page at `pageIndex` with sliding animation if `animated` is set to `true`. The default value of `animated` is `true`.
     public func shift(pageIndex: Int, animated: Bool = true, forced: Bool = false) {
-        guard pageIndex != currentIndex || forced else {
+        guard pageIndex != currentIndex && !(pageIndex == destinationIndex && scrollInProgress) || forced else {
             return
         }
         // Do not allow multiple shift calls,
@@ -514,7 +514,6 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
     @objc private func scrollViewEndAnimating(_ scrollView: UIScrollView) {
         NSObject.cancelPreviousPerformRequests(withTarget: self)
         scrollInProgress = false
-        
         let nextIndex = destinationIndex ?? pageIndex(for: scrollView.contentOffset)
         loadView(pageIndex: nextIndex)
         if nextIndex != currentIndex {
@@ -605,8 +604,11 @@ private extension PrivateSlideController {
             destinationIndex = startIndex - 1
         } else {
             startIndex = actualIndex
+            
             destinationIndex = startIndex + 1
         }
+        // set destination to avoid jumps when regular scroll performed to next
+        self.destinationIndex = destinationIndex
         titleSlidableController.shift(delta: offset, startIndex: startIndex, destinationIndex: destinationIndex)
     }
     
@@ -633,7 +635,6 @@ private extension PrivateSlideController {
             destinationIndex = startIndex + 1
         }
         let offset = contentAxisOffset - CGFloat(startIndex) * pageSize
-        
         titleSlidableController.indicatorSlide(offset: offset, pageSize: pageSize, startIndex: startIndex, destinationIndex: destinationIndex)
     }
     
