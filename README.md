@@ -1,12 +1,13 @@
 ![LOGO](https://github.com/touchlane/SlideController/blob/master/Assets/logo.svg)
 
+![Language](https://img.shields.io/badge/swift-4.2-orange.svg)
 [![Build Status](https://travis-ci.org/touchlane/SlideController.svg?branch=master)](https://travis-ci.org/touchlane/SlideController)
 [![codecov.io](https://codecov.io/gh/touchlane/SlideController/branch/master/graphs/badge.svg)](https://codecov.io/gh/codecov/SlideController/branch/master)
 [![Version](https://img.shields.io/cocoapods/v/SlideController.svg?style=flat)](http://cocoapods.org/pods/SlideController)
 [![License](https://img.shields.io/cocoapods/l/SlideController.svg?style=flat)](http://cocoapods.org/pods/SlideController)
 [![Platform](https://img.shields.io/cocoapods/p/SlideController.svg?style=flat)](http://cocoapods.org/pods/SlideController)
 
-SlideController is simple and flexible UI component completely written in Swift. It is nice alternative for UIPageViewController built using power of generic types.
+SlideController is a simple and flexible UI component fully written in Swift. Built using power of generic types, it is a nice alternative to UIPageViewController.
 
 ![Horizontal](Example/Assets/horizontal.gif)
 ![Vertical](Example/Assets/vertical.gif)
@@ -15,8 +16,8 @@ SlideController is simple and flexible UI component completely written in Swift.
 # Requirements
 
 * iOS 9.0+
-* Xcode 9.0+
-* Swift 4.0+
+* Xcode 10.0+
+* Swift 4.2+
 
 # Installation
 

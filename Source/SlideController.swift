@@ -108,7 +108,7 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
             guard oldValue != isForcedToSlide else {
                 return
             }
-            contentSlidableController.slideContentView.isScrollEnabled = !isForcedToSlide
+            contentSlidableController.slideContentView.isScrollEnabled = !isForcedToSlide && isScrollEnabled
         }
     }
     private var isOnScreen = false
@@ -419,8 +419,7 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
                     contentSlidableController.slideContentView.setContentOffset(CGPoint(x: 0, y: newContentOffset), animated: animated)
                 }
                 return
-            }
-            else {
+            } else {
                 page = 0
                 animated = false
             }
@@ -477,16 +476,14 @@ public class SlideController<T, N>: NSObject, UIScrollViewDelegate, ControllerSl
             case .up, .right:
                 if nextIndex == -1 {
                     loadLeftEdgeView()
-                }
-                else {
+                } else {
                     loadViewIfNeeded(pageIndex: nextIndex)
                     loadViewIfNeeded(pageIndex: nextIndex - 1)
                 }
             case .down, .left:
                 if nextIndex == content.count {
                     loadRightEdgeView()
-                }
-                else {
+                } else {
                     loadViewIfNeeded(pageIndex: nextIndex)
                     loadViewIfNeeded(pageIndex: nextIndex + 1)
                 }
@@ -568,14 +565,14 @@ private typealias PrivateSlideController = SlideController
 private extension PrivateSlideController {
     func calculateContentPageSize(direction: SlideDirection, titleViewAlignment: TitleViewAlignment, titleViewPosition: TitleViewPosition, titleSize: CGFloat) -> CGFloat {
         var contentPageSize: CGFloat!
-        if direction == SlideDirection.horizontal {
-            if (titleViewAlignment == TitleViewAlignment.left || titleViewAlignment == TitleViewAlignment.right) && titleViewPosition == TitleViewPosition.beside {
+        if direction == .horizontal {
+            if (titleViewAlignment == .left || titleViewAlignment == .right) && titleViewPosition == .beside {
                 contentPageSize = containerView.frame.width - titleSlidableController.titleView.titleSize
             } else {
                 contentPageSize = containerView.frame.width
             }
         } else {
-            if (titleViewAlignment == TitleViewAlignment.top || titleViewAlignment == TitleViewAlignment.bottom) && titleViewPosition == TitleViewPosition.beside {
+            if (titleViewAlignment == .top || titleViewAlignment == .bottom) && titleViewPosition == .beside {
                 contentPageSize = containerView.frame.height - titleSlidableController.titleView.titleSize
             } else {
                 contentPageSize = containerView.frame.height
@@ -587,7 +584,7 @@ private extension PrivateSlideController {
     func scrollToPage(pageIndex: Int, animated: Bool) {
         titleSlidableController.jump(index: pageIndex, animated: animated)
         didFinishSlideAction = contentSlidableController.scroll(fromPage: currentIndex, toPage: pageIndex, animated: animated)
-        if slideDirection == SlideDirection.horizontal {
+        if slideDirection == .horizontal {
             lastContentOffset = contentSlidableController.slideContentView.contentOffset.x
         } else {
             lastContentOffset = contentSlidableController.slideContentView.contentOffset.y
@@ -595,23 +592,28 @@ private extension PrivateSlideController {
     }
     
     func updateTitleScrollOffset(contentOffset: CGFloat, pageSize: CGFloat) {
-        let actualIndex = Int(contentOffset / pageSize)
-        let offset = contentOffset - lastContentOffset
-        var startIndex: Int
-        var destinationIndex: Int
-        if  offset < 0 {
+        var actualIndex = Int(contentOffset / pageSize)
+        if self.isCarousel {
+            actualIndex -= 1
+        }
+        
+        let startIndex: Int
+        let destinationIndex: Int
+        if contentOffset < self.lastContentOffset {
             startIndex = actualIndex + 1
-            destinationIndex = startIndex - 1
+            destinationIndex = actualIndex
         } else {
             startIndex = actualIndex
             
             destinationIndex = startIndex + 1
         }
+
         // set destination to avoid jumps when regular scroll performed to next
         self.destinationIndex = destinationIndex
-        titleSlidableController.shift(delta: offset, startIndex: startIndex, destinationIndex: destinationIndex)
+        let scrollRatio = contentOffset.remainder(dividingBy: pageSize) / pageSize
+        self.titleSlidableController.shift(ratio: scrollRatio, startIndex: startIndex, destinationIndex: destinationIndex)
     }
-    
+
     func updateSelectIndicator(contentOffset: CGPoint, pageSize: CGFloat) {
         var contentAxisOffset: CGFloat = 0
         let offsetCorrection = contentSlidableController.edgeContainers == nil ? 0 : pageSize

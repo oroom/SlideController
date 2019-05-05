@@ -1,3 +1,24 @@
+# Changelog for SlideController 1.5.0
+### Fixed
+* Improved performance by replacing autolayout with frame-based layout
+* Fixed title view jumping while scrolling content
+
+# Changelog for SlideController 1.4.0
+### Added
+* Updates for Swift 4.2
+
+# Changelog for SlideController 1.3.5
+### Fixed
+* Reset of `isScrollEnabled` property
+
+# Changelog for SlideController 1.3.4
+### Fixed
+* Sliding indicator animation when title jumps not animated.
+
+# Changelog for SlideController 1.3.3
+### Added
+* `shouldAnimateIndicatorOnSelection(index: Int) -> Bool` in `TitleConfigurable` allows to manage animation of sliding indicator
+
 # Changelog for SlideController 1.3.2
 ### Fixed
 * Do not allow multiple `shift` calls at the same time to prevent titleView freeze.
