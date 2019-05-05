@@ -20,7 +20,7 @@ protocol TitleScrollable: class {
 class TitleSlidableController<T, N>: TitleScrollable where T: ViewSlidable, T: UIScrollView, T: TitleConfigurable, N: TitleItemControllableObject, N: UIView, N.Item == T.View {
 
     private var isOffsetChangeAllowed = true
-    private var scrollDirection: SlideDirection
+    private var slideDirection: SlideDirection
     private var selectedIndex = -1
     
     private lazy var didCompleteSelectItemAction: () -> Void = { [weak self] in
